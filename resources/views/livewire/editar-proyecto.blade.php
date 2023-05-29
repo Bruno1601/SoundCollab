@@ -1,4 +1,4 @@
-<form class="md:w-1/2" wire:submit.prevent='crearProyecto'>
+<form class="md:w-1/2" wire:submit.prevent='editarProyecto'>
 
     <div>
         <x-input-label for="nombre_proyecto" :value="__('Nombre')" />
@@ -34,7 +34,7 @@
 
     <div class="flex justify-center">
     <x-primary-button class=" mt-2">
-        Crear Proyecto
+        Guardar Cambios
     </x-primary-button>
     </div>
 

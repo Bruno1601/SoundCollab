@@ -7,11 +7,14 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    {{ __("Mis proyectos") }}
+
+            @if (session()->has('mensaje'))
+                <div class="border border-green-600 bg-green-100 text-green-600 font-bold p-2 my-3">
+                    {{session('mensaje')}}
                 </div>
-            </div>
+            @endif
+
+            <livewire:mostrar-proyectos/>
         </div>
     </div>
 </x-app-layout>

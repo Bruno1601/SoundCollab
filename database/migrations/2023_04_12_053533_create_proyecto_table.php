@@ -11,10 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('proyectos', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+        if(!Schema::hasTable('proyectos')){
+            Schema::create('proyectos', function (Blueprint $table) {
+                $table->id();
+                $table->string('nombre_proyecto');
+                $table->string('descripcion');
+                $table->foreignId('user_id')->constrained()->onDelete();
+                $table->string('ruta_carpeta');
+                $table->timestamps();
+
+
+            });
+        }
     }
 
     /**

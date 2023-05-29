@@ -21,7 +21,7 @@ Route::get('/', function () {
 
 Route::get('/dashboard', [ProyectoController::class, 'index'])->middleware(['auth', 'verified'])->name('proyectos.index');
 Route::get('/proyectos/create', [ProyectoController::class, 'create'])->middleware(['auth', 'verified'])->name('proyectos.create');
-
+Route::get('/proyectos/{proyecto}/edit', [ProyectoController::class, 'edit'])->middleware(['auth', 'verified'])->name('proyectos.edit');
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
