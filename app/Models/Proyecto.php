@@ -19,4 +19,9 @@ class Proyecto extends Model
     public function users(){
         return $this->belongsToMany(User::class,'colaborador_proyecto');
     }
+    
+    public function archivos()
+    {
+        return $this->hasMany(Archivo::class);
+    }
 }

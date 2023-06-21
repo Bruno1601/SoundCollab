@@ -13,7 +13,7 @@ class CrearProyecto extends Component
     public $descripcion;
 
     protected $rules = [
-        'nombre_proyecto'=> 'required|string',
+        'nombre_proyecto' => 'required|string',
         'descripcion' => 'required|string'
     ];
 
@@ -21,28 +21,21 @@ class CrearProyecto extends Component
     {
         $datos = $this->validate();
 
-        //Crear el directorio para el proyecto
-        $rutaCarpeta = public_path('proyectos/' . uniqid()); // Genera un ID único para el directorio
-        File::makeDirectory($rutaCarpeta);
+        // Crear el directorio para el proyecto
+        $rutaCarpeta = storage_path('app/public/proyectos/' . uniqid()); // Genera un ID único para el directorio
+        File::makeDirectory($rutaCarpeta, 0777, true);
 
-        //Crear el proyecto
+        // Crear el proyecto
         Proyecto::create([
-        'nombre_proyecto' => $datos['nombre_proyecto'],
-        'descripcion' => $datos['descripcion'],
-        'user_id' => auth()->user()->id,
-        'ruta_carpeta' => $rutaCarpeta
+            'nombre_proyecto' => $datos['nombre_proyecto'],
+            'descripcion' => $datos['descripcion'],
+            'user_id' => auth()->user()->id,
+            'ruta_carpeta' => $rutaCarpeta
         ]);
 
-        //Crear un mensaje
-
+        // Crear un mensaje
         session()->flash('mensaje', 'El proyecto se creó correctamente');
         return redirect()->route('proyectos.index');
-
-
-
-
-        //Redireccionar al usuario
-
     }
 
     public function render()

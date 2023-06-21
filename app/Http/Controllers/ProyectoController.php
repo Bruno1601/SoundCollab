@@ -41,4 +41,11 @@ class ProyectoController extends Controller
             'proyecto' => $proyecto
         ]);
     }
+
+    public function verProyecto($proyecto)
+    {
+        $proyecto = Proyecto::findOrFail($proyecto);
+
+        return view('proyectos.verproyecto', compact('proyecto'));
+    }
 }
