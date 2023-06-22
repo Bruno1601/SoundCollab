@@ -49,4 +49,37 @@ class ArchivoController extends Controller
     // Redireccionar o realizar otras acciones después de guardar los archivos
     return redirect()->back()->with('success', 'Archivos subidos correctamente');
 }
+
+    // ArchivoController.php o archivo de funciones auxiliares
+
+function obtenerFormatoArchivo($nombreArchivo)
+{
+    $extension = pathinfo($nombreArchivo, PATHINFO_EXTENSION);
+
+    // Puedes personalizar la lógica para detectar el formato según la extensión
+    // Por ejemplo:
+    switch ($extension) {
+        case 'mp3':
+            return 'MP3';
+        case 'wav':
+            return 'WAV';
+        case 'flp':
+            return 'FL Studio Project';
+        default:
+            return strtoupper($extension);
+    }
+}
+
+public function descargar($archivoId)
+{
+    $archivo = Archivo::findOrFail($archivoId);
+    $rutaArchivo = $archivo->ruta;
+
+    if (Storage::exists($rutaArchivo)) {
+        return Storage::download($rutaArchivo);
+    } else {
+        abort(404);
+    }
+}
+
 }
