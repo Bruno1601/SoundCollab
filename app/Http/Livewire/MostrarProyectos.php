@@ -16,11 +16,16 @@ class MostrarProyectos extends Component
     }
 
     public function render()
-    {
-        $proyectos = Proyecto::where('user_id', auth()->user()->id)->paginate(4);
-        return view('livewire.mostrar-proyectos',[
-            'proyectos'=> $proyectos
-        ]);
+{
+    $proyectos = Proyecto::where('user_id', auth()->user()->id)
+        ->orWhereHas('users', function ($query) {
+            $query->where('users.id', auth()->user()->id);
+        })
+        ->orderByDesc('created_at')
+        ->paginate(4);
 
-    }
+    return view('livewire.mostrar-proyectos', [
+        'proyectos' => $proyectos
+    ]);
+}
 }

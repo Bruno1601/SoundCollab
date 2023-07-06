@@ -44,8 +44,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
     ];
 
-    public function proyectos(){
-        return $this->belongsToMany(Proyecto::class,'colaborador_proyecto');
+    public function proyectos()
+    {
+        return $this->belongsToMany(Proyecto::class, 'colaborador_proyecto', 'user_id', 'proyecto_id');
     }
+
 
 }

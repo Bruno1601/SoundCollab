@@ -32,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/archivos/{archivoId}/descargar', [ArchivoController::class, 'descargar'])->name('archivos.descargar');
+    Route::get('/proyectos/{proyectoId}/descargar', [ArchivoController::class, 'descargarCarpeta'])->name('archivos.descargarCarpeta');
+    
 });
 
 require __DIR__.'/auth.php';

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Proyecto;
 use Illuminate\Http\Request;
+use App\Policies\ProyectoPolicy;
 
 class ProyectoController extends Controller
 {
@@ -11,9 +12,16 @@ class ProyectoController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        return view('proyectos.index');
-    }
+{
+    $user = auth()->user();
+    $proyectos = Proyecto::where('user_id', $user->id)
+        ->orWhereHas('users', function ($query) use ($user) {
+            $query->where('users.id', $user->id);
+        })
+        ->paginate(4);
+
+    return view('proyectos.index', compact('proyectos'));
+}
 
     /**
      * Show the form for creating a new resource.

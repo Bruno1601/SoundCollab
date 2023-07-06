@@ -6,80 +6,176 @@ use App\Models\Archivo;
 use App\Models\Proyecto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use ZipArchive;
+use Livewire\WithFileUploads;
 
 class ArchivoController extends Controller
 {
+    use WithFileUploads;
+
     public function subirArchivos(Request $request)
-{
-    $proyectoId = $request->input('proyecto_id');
+    {
+        $proyectoId = $request->input('proyecto_id');
 
-    // Obtener el proyecto
-    $proyecto = Proyecto::findOrFail($proyectoId);
+        // Obtener el proyecto
+        $proyecto = Proyecto::findOrFail($proyectoId);
 
-    // Validar los archivos subidos si es necesario
-    if ($request->hasFile('archivos')) {
-        $archivos = $request->file('archivos');
+        // Validar los archivos subidos si es necesario
+        if ($request->hasFile('archivos')) {
+            $archivos = $request->file('archivos');
+            $errores = [];
 
-        foreach ($archivos as $archivo) {
-            // Obtener detalles del archivo
-            $nombreArchivo = $archivo->getClientOriginalName();
+            foreach ($archivos as $archivo) {
+                // Obtener detalles del archivo
+                $nombreArchivo = $archivo->getClientOriginalName();
+                $extension = $archivo->getClientOriginalExtension();
 
-            // Crear la ruta completa para la carpeta del archivo dentro de la carpeta del proyecto
-            $rutaCarpetaArchivo = $proyecto->ruta_carpeta . '/' . $nombreArchivo;
+                // Validar el tipo de archivo
+                $formatoEncontrado = $this->validarFormatoArchivo($extension);
+                if (!$formatoEncontrado) {
+                    $errores[] = 'Tipo de archivo no permitido: ' . $nombreArchivo;
+                }
 
-            // Verificar si la carpeta del archivo ya existe, si no, crearla
-            if (!Storage::exists('public/proyectos/' . $proyectoId . '/' . $nombreArchivo)) {
-                Storage::makeDirectory('public/proyectos/' . $proyectoId . '/' . $nombreArchivo);
+                // Validar el tamaño del archivo
+                $tamanioMaximo = 500 * 1024 * 1024; // 500 MB en bytes
+                if ($archivo->getSize() > $tamanioMaximo) {
+                    $errores[] = 'El archivo excede el tamaño máximo permitido: ' . $nombreArchivo;
+                }
+
+                if (count($errores) === 0) {
+                    // Crear la ruta completa para la carpeta del archivo dentro de la carpeta del proyecto
+                    $rutaCarpetaArchivo = $proyecto->ruta_carpeta . '/' . $nombreArchivo;
+
+                    // Verificar si la carpeta del archivo ya existe, si no, crearla
+                    if (!Storage::exists('public/proyectos/' . $proyectoId . '/' . $nombreArchivo)) {
+                        Storage::makeDirectory('public/proyectos/' . $proyectoId . '/' . $nombreArchivo);
+                    }
+
+                    // Guardar el archivo en el almacenamiento dentro de la carpeta del archivo
+                    $rutaArchivo = $archivo->storeAs('public/proyectos/' . $proyectoId . '/' . $nombreArchivo, $nombreArchivo);
+
+                    // Crear una nueva instancia del modelo Archivo
+                    $nuevoArchivo = new Archivo();
+                    $nuevoArchivo->nombre = $nombreArchivo;
+                    $nuevoArchivo->ruta = $rutaArchivo;
+                    $nuevoArchivo->proyecto_id = $proyectoId;
+
+                    // Guardar el archivo en la base de datos
+                    $nuevoArchivo->save();
+                }
             }
 
-            // Guardar el archivo en el almacenamiento dentro de la carpeta del archivo
-            $rutaArchivo = $archivo->storeAs('public/proyectos/' . $proyectoId . '/' . $nombreArchivo, $nombreArchivo);
-
-            // Crear una nueva instancia del modelo Archivo
-            $nuevoArchivo = new Archivo();
-            $nuevoArchivo->nombre = $nombreArchivo;
-            $nuevoArchivo->ruta = $rutaArchivo;
-            $nuevoArchivo->proyecto_id = $proyectoId;
-
-            // Guardar el archivo en la base de datos
-            $nuevoArchivo->save();
+            if (count($errores) > 0) {
+                return redirect()->back()->withErrors($errores)->withInput();
+            }
         }
+
+        return redirect()->back()->with('success', 'Archivos subidos correctamente');
     }
 
-    // Redireccionar o realizar otras acciones después de guardar los archivos
-    return redirect()->back()->with('success', 'Archivos subidos correctamente');
-}
+    public function descargar($archivoId)
+    {
+        $archivo = Archivo::findOrFail($archivoId);
 
-    // ArchivoController.php o archivo de funciones auxiliares
+        return response()->download(storage_path('app/' . $archivo->ruta));
+    }
 
-function obtenerFormatoArchivo($nombreArchivo)
+    private function validarFormatoArchivo($extension)
+    {
+        $formatosPermitidos = [
+            'pro_tools' => ['ptx', 'ptf', 'wav', 'aiff'],
+            'logic_pro' => ['logicx', 'exs', 'wav', 'aiff'],
+            'ableton_live' => ['als', 'alc', 'adv'],
+            'cubase' => ['cpr', 'wav', 'aiff', 'vstpreset'],
+            'fl_studio' => ['flp', 'wav', 'mp3', 'dll', 'vst3','rar'],
+            'studio_one' => ['song', 'wav', 'aiff', 'presence', 'multitrack'],
+            'reason' => ['reason', 'cmb', 'sxt'],
+            'bitwig_studio' => ['bwproject', 'bwt', 'bwpreset'],
+            'reaper' => ['rpp', 'rpp-template', 'wav', 'aiff'],
+            'nuendo' => ['npr', 'npv', 'wav', 'aiff'],
+            'digital_performer' => ['dpdoc', 'wav', 'aiff', 'dppl', 'dpugp'],
+            'fl_studio_old' => ['flp', 'wav', 'mp3', 'dll', 'vst'],
+            'midi' => ['mid', 'midi'],
+        ];
+
+        foreach ($formatosPermitidos as $formato) {
+            if (in_array($extension, $formato)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function descargarCarpeta($proyectoId)
+    {
+        $proyecto = Proyecto::findOrFail($proyectoId);
+
+        // Obtener la ruta de almacenamiento de los archivos del proyecto
+        $carpetaProyecto = storage_path('app/public/proyectos/' . $proyecto->id);
+
+        // Verificar si la carpeta del proyecto existe y contiene archivos
+        if (!is_dir($carpetaProyecto) || !$this->carpetaContieneArchivos($carpetaProyecto)) {
+            return redirect()->back()->withErrors(['El proyecto no tiene archivos para descargar']);
+        }
+
+        // Crear un archivo ZIP temporal
+        $archivoZip = storage_path('app/public/proyectos/' . $proyecto->id . '.zip');
+        $zip = new ZipArchive();
+
+        if ($zip->open($archivoZip, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+            // Agregar cada archivo de la carpeta al archivo ZIP
+            $archivosCarpeta = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($carpetaProyecto));
+            foreach ($archivosCarpeta as $archivo) {
+                if (!$archivo->isDir()) {
+                    $rutaArchivo = str_replace('\\', '/', $archivo->getPathname()); // Reemplazar barras invertidas por barras normales
+                    $nombreArchivo = str_replace($carpetaProyecto . '/', '', $rutaArchivo); // Obtener el nombre del archivo relativo a la carpeta
+                    $zip->addFile($rutaArchivo, $nombreArchivo);
+                }
+            }
+
+            // Cerrar el archivo ZIP
+            $zip->close();
+
+            // Descargar el archivo ZIP con el nombre del proyecto
+            $nombreArchivoDescarga = $proyecto->nombre_proyecto . '.zip';
+            return response()->download($archivoZip, $nombreArchivoDescarga)->deleteFileAfterSend(true);
+        }
+
+        // Si ocurre un error al crear el archivo ZIP, redirigir a la página anterior
+        return redirect()->back()->withErrors(['No se pudo crear el archivo ZIP']);
+    }
+
+    private function carpetaContieneArchivos($carpeta)
+    {
+        $archivos = new \FilesystemIterator($carpeta);
+        return $archivos->valid();
+    }
+
+    public function verProyecto($proyectoId)
 {
-    $extension = pathinfo($nombreArchivo, PATHINFO_EXTENSION);
+    $proyecto = Proyecto::findOrFail($proyectoId);
+    $archivos = Archivo::where('proyecto_id', $proyectoId)->get();
 
-    // Puedes personalizar la lógica para detectar el formato según la extensión
-    // Por ejemplo:
-    switch ($extension) {
-        case 'mp3':
-            return 'MP3';
-        case 'wav':
-            return 'WAV';
-        case 'flp':
-            return 'FL Studio Project';
-        default:
-            return strtoupper($extension);
+    // Obtener la extensión del archivo y asignarla como formato
+    foreach ($archivos as $archivo) {
+        $nombreArchivo = $archivo->nombre;
+        $extension = pathinfo($nombreArchivo, PATHINFO_EXTENSION);
+        $archivo->formato = $extension;
     }
+
+    return view('proyectos.verproyecto', compact('proyecto', 'archivos'));
 }
 
-public function descargar($archivoId)
-{
-    $archivo = Archivo::findOrFail($archivoId);
-    $rutaArchivo = $archivo->ruta;
+    public function reproducirArchivo($archivoId)
+    {
+        $archivo = Archivo::findOrFail($archivoId);
 
-    if (Storage::exists($rutaArchivo)) {
-        return Storage::download($rutaArchivo);
-    } else {
-        abort(404);
+        if ($archivo->formato === 'mp3' || $archivo->formato === 'wav') {
+            return response()->json(['url' => Storage::url($archivo->ruta)]);
+        }
+
+        return response()->json(['url' => null]);
     }
-}
-
 }
