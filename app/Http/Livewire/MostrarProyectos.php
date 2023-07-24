@@ -2,17 +2,27 @@
 
 namespace App\Http\Livewire;
 
-use App\Models\Proyecto;
 use Livewire\Component;
+use App\Models\Proyecto;
+use Illuminate\Support\Facades\Storage;
 
 
 class MostrarProyectos extends Component
 {
     protected $listeners = ['eliminarProyecto'];
 
-    public function eliminarProyecto(Proyecto $proyecto)
+    public function eliminarProyecto($proyectoId)
     {
+        $proyecto = Proyecto::findOrFail($proyectoId);
+
+        // Elimina todos los archivos y directorios relacionados en el servidor
+        Storage::deleteDirectory('public/proyectos/' . $proyectoId);
+
+        // Luego elimina el proyecto de la base de datos
         $proyecto->delete();
+
+        // Envía un mensaje a la vista para mostrar el éxito de la eliminación del proyecto
+        session()->flash('success', 'Proyecto eliminado correctamente');
     }
 
     public function render()

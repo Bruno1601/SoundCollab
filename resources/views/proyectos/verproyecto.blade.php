@@ -18,11 +18,11 @@
                 <form method="POST" action="{{ route('archivos.subir', ['proyecto' => $proyecto->id]) }}" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="proyecto_id" value="{{ $proyecto->id }}">
-                    <label for="archivos" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded cursor-pointer">
+                    <label for="archivos" class="border border-gray-300 rounded cursor-pointer p-2">
                         <i class="fas fa-cloud-upload-alt mr-1"></i> Subir Archivos
                     </label>
                     <input type="file" name="archivos[]" id="archivos" class="hidden" multiple>
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded ml-2">Cargar</button>
+                    <button type="submit" class="ml-2">Cargar</button>
                 </form>
 
                 @if ($errors->any())
@@ -34,6 +34,10 @@
                         </ul>
                     </div>
                 @endif
+
+                <a href="{{ route('proyectos.colaboradores', ['proyecto' => $proyecto->id]) }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                    Ver Colaboradores
+                </a>
 
                 @if (session('success'))
                     <div id="success-message" class="text-green-500 ml-4">

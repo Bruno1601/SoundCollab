@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\File;
 
 class CrearProyecto extends Component
 {
-
     public $nombre_proyecto;
     public $descripcion;
 
@@ -21,16 +20,11 @@ class CrearProyecto extends Component
     {
         $datos = $this->validate();
 
-        // Crear el directorio para el proyecto
-        $rutaCarpeta = storage_path('app/public/proyectos/' . uniqid()); // Genera un ID único para el directorio
-        File::makeDirectory($rutaCarpeta, 0777, true);
-
         // Crear el proyecto
         Proyecto::create([
             'nombre_proyecto' => $datos['nombre_proyecto'],
             'descripcion' => $datos['descripcion'],
             'user_id' => auth()->user()->id,
-            'ruta_carpeta' => $rutaCarpeta
         ]);
 
         // Crear un mensaje

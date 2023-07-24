@@ -43,15 +43,27 @@ class ListaArchivo extends Component
     {
         $archivo = Archivo::findOrFail($archivoId);
 
+        // Obtener la ruta del archivo
+        $rutaArchivo = $archivo->ruta;
+
         // Eliminar el archivo de almacenamiento
-        Storage::delete($archivo->ruta);
+        Storage::delete($rutaArchivo);
+
+        // Obtener el directorio del archivo
+        $directorioArchivo = dirname($rutaArchivo);
+
+        // Comprobar si el directorio está vacío antes de eliminarlo
+        if (count(Storage::files($directorioArchivo)) == 0) {
+            // Si el directorio está vacío, entonces eliminarlo
+            Storage::deleteDirectory($directorioArchivo);
+        }
 
         // Eliminar el registro del archivo de la base de datos
         $archivo->delete();
 
         session()->flash('success', 'Archivo eliminado correctamente');
     }
-
+    
     public function mount()
     {
         $this->listeners['reproductorIniciado'] = 'iniciarReproductor';
@@ -61,4 +73,5 @@ class ListaArchivo extends Component
     {
         $this->dispatchBrowserEvent('iniciar-reproductor');
     }
+
 }

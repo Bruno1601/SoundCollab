@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Proyecto;
 use Illuminate\Http\Request;
 use App\Policies\ProyectoPolicy;
+use App\Models\ColaboradorProyecto;
 
 class ProyectoController extends Controller
 {
@@ -55,5 +56,12 @@ class ProyectoController extends Controller
         $proyecto = Proyecto::findOrFail($proyecto);
 
         return view('proyectos.verproyecto', compact('proyecto'));
+    }
+
+    public function verColaboradores($proyectoId)
+    {
+        $colaboradores = ColaboradorProyecto::with('user')->where('proyecto_id', $proyectoId)->get();
+        // dd($colaboradores);
+        return view('proyectos.colaboradores', compact('colaboradores'));
     }
 }

@@ -18,4 +18,20 @@ class Archivo extends Model
     {
         return $this->belongsTo(Proyecto::class,'proyecto_id');
     }
+
+
+    /**
+     * Obtener las versiones del archivo.
+     */
+    public function versiones()
+    {
+        return $this->hasMany(Version::class, 'archivo_id')->orderBy('version', 'desc');
+    }
+    /**
+     * Obtener la última versión del archivo.
+     */
+    public function ultimaVersion()
+{
+    return $this->hasOne(Version::class, 'archivo_id')->orderBy('version', 'desc');
+}
 }

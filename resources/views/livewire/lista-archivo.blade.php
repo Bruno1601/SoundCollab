@@ -1,4 +1,3 @@
-
 <div>
     <h1 class="text-2xl font-bold text-center mb-5">Archivos</h1>
 
@@ -8,7 +7,7 @@
                 <div class="flex items-center justify-center h-24 mb-4">
                     @if ($archivo->formato === 'mp3' || $archivo->formato === 'wav')
                         <audio id="player-{{ $archivo->id }}" controls wire:click="iniciarReproductor">
-                            <source src="{{ Storage::url($archivo->ruta) }}" type="audio/{{ $archivo->formato }}">
+                            <source src="{{ Storage::url($archivo->ultimaVersion->ruta ?? $archivo->ruta) }}" type="audio/{{ $archivo->formato }}">
                             Tu navegador no soporta la reproducción de audio.
                         </audio>
                     @elseif ($archivo->formato === 'flp')
@@ -19,12 +18,13 @@
                 </div>
 
                 <h2 class="text-xl font-bold">{{ $archivo->nombre }}</h2>
-                <p class="text-gray-600">{{ $archivo->formato }}</p>
-                <p class="text-gray-600 text-sm">{{ $archivo->created_at }}</p>
+                <p class="text-gray-600 text-sm">{{ $archivo->ultimaVersion->fecha_subida ?? $archivo->created_at }}</p>
+                {{-- <h1 class="text-2xl font-bold text-center mb-5">Versión: {{ $archivo->ultimaVersion->version ?? $archivo->version }}</h1> --}}
+                <livewire:versiones-archivo :archivoId="$archivo->id" />
+                <h1 class="text-2xl font-bold text-center mb-5"></h1>
                 <a href="{{ route('archivos.descargar', ['archivoId' => $archivo->id]) }}" class="text-blue-500 hover:underline">Descargar</a>
                 <button wire:click="eliminarArchivo({{ $archivo->id }})" class="text-red-500 hover:underline ml-2">Eliminar</button>
             </div>
         @endforeach
     </div>
 </div>
-
