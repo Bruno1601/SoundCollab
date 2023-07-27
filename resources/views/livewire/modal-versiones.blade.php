@@ -15,6 +15,9 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Versión</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subido por</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de subida</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bitrate</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sample Rate</th>
+                                <!-- Agregar más th aquí para cada pieza de información que quieras mostrar -->
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                             </tr>
                         </thead>
@@ -28,15 +31,20 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             {{ $version['created_at'] ? \Carbon\Carbon::parse($version['created_at'])->format('d/m/Y H:i:s') : 'N/A' }}
                                         </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $version['bitrate'] ?? 'N/A' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $version['sample_rate'] ?? 'N/A' }}</td>
+                                        <!-- Agregar más td aquí para cada pieza de información que quieras mostrar -->
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <a href="{{ route('archivos.descargar', ['archivoId' => $version['archivo']['id']]) }}" class="text-blue-500 hover:underline">Descargar</a>
+                                            @if(!$archivo->bloqueado || optional($archivo->bloqueadoPor)->id === optional(auth()->user())->id)
                                             <button wire:click="eliminarArchivo({{ $version['id'] }})" class="text-red-500 hover:underline ml-2">Eliminar</button>
+                                        @endif
                                         </td>
                                     </tr>
                                 @endforeach
                             @else
                                 <tr>
-                                    <td colspan="5">No hay versiones disponibles</td>
+                                    <td colspan="7">No hay versiones disponibles</td>  <!-- Asegúrate de actualizar el colspan al número correcto de columnas -->
                                 </tr>
                             @endif
                         </tbody>

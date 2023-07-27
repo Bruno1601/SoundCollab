@@ -4,6 +4,6 @@
     <x-primary-button wire:click="abrirModalVersiones"><i class="fas fa-history mr-1"></i>Versiones</x-primary-button>
 
     @if($modal)
-        @livewire('modal-versiones', ['archivoId' => $archivoId], key($archivoId))
+        @livewire('modal-versiones', ['archivoId' => $archivoId], key(uniqid()))
     @endif
 </div>

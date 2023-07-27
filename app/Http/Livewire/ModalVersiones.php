@@ -6,35 +6,66 @@ use App\Models\Archivo;
 use App\Models\Version;
 use Livewire\Component;
 use Illuminate\Support\Facades\Storage;
+use getID3 as GlobalGetID3;
 
 class ModalVersiones extends Component
 {
     public $archivoId;
     public $versiones;
+    public $archivo;
 
     public function mount($archivoId)
-{
-    $this->archivoId = $archivoId;
+    {
+        $this->archivoId = $archivoId;
 
-    $versiones = Version::where('archivo_id', $this->archivoId)->get();
+        // Obtener el archivo relacionado con la versión
+        $this->archivo = Archivo::find($this->archivoId);
 
-    // Convertir la colección de versiones a un array
-    $versiones = $versiones->map(function ($version) {
-        return [
-            'id' => $version->id, // Aquí está el ID de la versión
-            'archivo' => [
-                'nombre' => $version->archivo->nombre,
-                'id' => $version->archivo->id
-            ],
-            'version' => $version->version,
-            'usuario' => $version->usuario,
-            'created_at' => $version->created_at,
-            'archivo_id' => $version->archivo_id
-        ];
-    })->toArray();
+        if (!$this->archivo) {
+            // Manejar el caso si el archivo no se encuentra
+            // Puedes mostrar un mensaje de error o redirigir a otra página, según tus necesidades.
+            return;
+        }
 
-    $this->versiones = $versiones;
-}
+        // Obtener las versiones relacionadas con el archivo
+        $versiones = Version::where('archivo_id', $this->archivoId)->get();
+
+        // Crear una nueva instancia de getID3
+        $getID3 = new GlobalGetID3;
+
+        // Convertir la colección de versiones a un array
+        $versiones = $versiones->map(function ($version) use ($getID3) {
+            // Obtener la ruta del archivo de la versión
+            $filePathVersion = Storage::path($version->ruta);
+
+            // Analizar el archivo de la versión
+            $fileInfoVersion = $getID3->analyze($filePathVersion);
+
+            // Extraer la información deseada del archivo
+            $bitrate = $fileInfoVersion['audio']['bitrate'] ?? null;
+            $sample_rate = $fileInfoVersion['audio']['sample_rate'] ?? null;
+            // etc...
+
+            return [
+                'id' => $version->id, // Aquí está el ID de la versión
+                'archivo' => [
+                    'nombre' => $version->archivo->nombre,
+                    'id' => $version->archivo->id,
+                    'bloqueado' => $version->archivo->bloqueado, // Añadir la información de bloqueo del archivo
+                    'bloqueadoPor' => $version->archivo->bloqueadoPor, // Añadir la información de quién bloqueó el archivo
+                ],
+                'version' => $version->version,
+                'usuario' => $version->usuario,
+                'created_at' => $version->created_at,
+                'archivo_id' => $version->archivo_id,
+                'bitrate' => $bitrate,
+                'sample_rate' => $sample_rate,
+                // etc...
+            ];
+        })->toArray();
+
+        $this->versiones = $versiones;
+    }
 
 public function eliminarArchivo($versionId)
 {

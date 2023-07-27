@@ -34,7 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/archivos/{archivoId}/descargar', [ArchivoController::class, 'descargar'])->name('archivos.descargar');
     Route::get('/proyectos/{proyectoId}/descargar', [ArchivoController::class, 'descargarCarpeta'])->name('archivos.descargarCarpeta');
     Route::get('/proyectos/{proyecto}/colaboradores', [ProyectoController::class, 'verColaboradores'])->name('proyectos.colaboradores');
-
+    
 });
 
 require __DIR__.'/auth.php';

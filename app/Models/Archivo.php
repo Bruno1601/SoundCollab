@@ -31,7 +31,12 @@ class Archivo extends Model
      * Obtener la última versión del archivo.
      */
     public function ultimaVersion()
-{
-    return $this->hasOne(Version::class, 'archivo_id')->orderBy('version', 'desc');
-}
+    {
+        return $this->hasOne(Version::class, 'archivo_id')->orderBy('version', 'desc');
+    }
+
+    public function bloqueadoPor()
+    {
+        return $this->belongsTo(User::class, 'bloqueado_por');
+    }
 }

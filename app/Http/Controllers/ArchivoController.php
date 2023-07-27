@@ -26,7 +26,8 @@ class ArchivoController extends Controller
             $errores = [];
 
             foreach ($archivos as $archivo) {
-                $nombreArchivo = $archivo->getClientOriginalName();
+                $nombreArchivoOriginal = $archivo->getClientOriginalName();
+                $nombreArchivo = preg_replace('/[^A-Za-z0-9-_.]/', '', $nombreArchivoOriginal);
                 $extension = $archivo->getClientOriginalExtension();
 
                 $formatoEncontrado = $this->validarFormatoArchivo($extension);
@@ -228,4 +229,5 @@ class ArchivoController extends Controller
 
         return response()->json(['url' => null]);
     }
+
 }

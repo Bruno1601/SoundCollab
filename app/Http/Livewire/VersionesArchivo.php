@@ -5,6 +5,7 @@ namespace App\Http\Livewire;
 use App\Models\Archivo;
 use App\Models\Version;
 use Livewire\Component;
+use Illuminate\Support\Facades\Storage;
 
 class VersionesArchivo extends Component
 {
@@ -24,23 +25,23 @@ class VersionesArchivo extends Component
     }
 
     public function render()
-{
-    $versiones = Version::where('archivo_id', $this->archivoId)->get();
+    {
+        $versiones = Version::where('archivo_id', $this->archivoId)->get();
 
-    $versiones = $versiones->map(function ($version) {
-        return [
-            'archivo' => [
-                'nombre' => $version->archivo->nombre,
-                'id' => $version->archivo->id
-            ],
-            'version' => $version->version,
-            'usuario' => $version->usuario,
-            'created_at' => $version->created_at,
-            'archivo_id' => $version->archivo_id
-        ];
-    })->toArray();
+        $versiones = $versiones->map(function ($version) {
+            return [
+                'archivo' => [
+                    'nombre' => $version->archivo->nombre,
+                    'id' => $version->archivo->id
+                ],
+                'version' => $version->version,
+                'usuario' => $version->usuario,
+                'created_at' => $version->created_at,
+                'archivo_id' => $version->archivo_id,
+                // No necesitamos analizar el archivo aquí
+            ];
+        })->toArray();
 
-    return view('livewire.versiones-archivo', ['versiones' => $versiones]);
-}
-
+        return view('livewire.versiones-archivo', ['versiones' => $versiones]);
+    }
 }
