@@ -16,7 +16,7 @@ return new class extends Migration
                 $table->id();
                 $table->string('nombre_proyecto');
                 $table->string('descripcion');
-                $table->foreignId('user_id')->constrained()->onDelete();
+                $table->foreignId('user_id')->constrained()->onDelete('cascade');
                 $table->string('ruta_carpeta');
                 $table->timestamps();
 
