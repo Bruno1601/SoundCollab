@@ -1,2 +1,5 @@
 *
 !.gitignore
+
+# Incluir la carpeta public/storage/proyectos sin su contenido
+!public/storage/proyectos/
