@@ -39,9 +39,10 @@
 
     @if (!$archivo->bloqueado || optional($archivo->bloqueadoPor)->id === optional(auth()->user())->id)
         <div class="flex justify-center space-x-4 mt-2">
-            <a href="{{ route('archivos.descargar', ['archivoId' => $archivo->id]) }}" class="text-blue-500 hover:underline sm:mx-2">
+            <a href="{{ route('versiones.descargar', ['versionId' => $archivo->ultimaVersion->id]) }}" class="text-blue-500 hover:underline sm:mx-2">
                 <i class="fas fa-download"></i>
             </a>
+
             <button wire:click="eliminarArchivo({{ $archivo->id }})" class="text-red-500 hover:underline sm:mx-2">
                 <i class="fas fa-trash-alt"></i>
             </button>

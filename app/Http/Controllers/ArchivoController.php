@@ -120,10 +120,34 @@ class ArchivoController extends Controller
 
     public function descargar($archivoId)
     {
+        // Encuentra el archivo por su ID
         $archivo = Archivo::findOrFail($archivoId);
 
-        return response()->download(storage_path('app/' . $archivo->ruta));
+        // Encuentra la última versión del archivo
+        $version = $archivo->versiones()->orderBy('version', 'desc')->first();
+
+        // Verifica que la versión exista
+        if ($version === null) {
+            // Maneja el error como desees, aquí simplemente devolvemos un mensaje
+            return response('No se encontró ninguna versión para este archivo.', 404);
+        }
+
+        // Devuelve la última versión del archivo para su descarga
+        return Storage::download($version->ruta);
     }
+
+
+    public function descargarVersion($versionId)
+    {
+        $version = Version::find($versionId);
+        if (!$version) {
+            abort(404, 'Versión no encontrada');
+        }
+
+        return Storage::download($version->ruta);
+    }
+
+
 
     private function validarFormatoArchivo($extension)
     {
