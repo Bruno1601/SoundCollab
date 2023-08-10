@@ -27,7 +27,7 @@ class ArchivoController extends Controller
 
             foreach ($archivos as $archivo) {
                 $nombreArchivoOriginal = $archivo->getClientOriginalName();
-                $nombreArchivo = preg_replace('/[^A-Za-z0-9\-_.\s]/', '', $nombreArchivoOriginal);
+                $nombreArchivo = preg_replace('/[^A-Za-z0-9\-_.@\s]/', '', $nombreArchivoOriginal);
                 $extension = $archivo->getClientOriginalExtension();
 
                 $formatoEncontrado = $this->validarFormatoArchivo($extension);
