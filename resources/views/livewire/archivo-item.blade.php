@@ -2,7 +2,7 @@
     <div class="flex flex-col items-center justify-center mb-4" wire:ignore>
         @if ($archivo->formato === 'mp3' || $archivo->formato === 'wav')
             <!-- Reproductor de audio -->
-            <div id="waveform-{{ $archivo->id }}" class="w-full bg-white-200 overflow-hidden my-4" data-src="{{ Storage::url($archivo->ruta) }}" style="height: 150px;"></div>
+            <div id="waveform-{{ $archivo->id }}" class="w-full bg-white-200 overflow-hidden my-4" data-src="{{ Storage::url($archivo->ultimaVersion->ruta) }}" style="height: 150px;"></div>
             <!-- Botones de control de audio -->
             <div class="flex items-center space-x-2">
                 <button id="play-{{ $archivo->id }}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-2 rounded">
@@ -15,13 +15,13 @@
 
             <!-- Información del archivo -->
             <div class="text-xs text-gray-500">
-                <p>Versión: {{ $archivo->ultimaVersion->version ?? 'Desconocido' }}</p>
-                <p>Bitrate: {{ $archivo->bitrate ?? 'Desconocido' }}</p>
-                <p>Tasa de muestreo: {{ $archivo->sample_rate ?? 'Desconocido' }}</p>
-                <p>Duración: {{ gmdate("i:s", $archivo->duration) }}</p>
-                <p>Tamaño del archivo: {{ round($archivo->filesize / 1024, 2) }} KB</p>
-                @if ($archivo->bits_per_sample)
-                    <p class="text-gray-500 text-xs">Profundidad de bits: {{ $archivo->bits_per_sample }} bits</p>
+                <p>Versión: {{ $ultimaVersion->version ?? 'Desconocido' }}</p>
+                <p>Bitrate: {{ $bitrate ?? 'Desconocido' }}</p>
+                <p>Tasa de muestreo: {{ $sample_rate ?? 'Desconocido' }}</p>
+                <p>Duración: {{ gmdate("i:s", $duration) }}</p>
+                <p>Tamaño del archivo: {{ round($filesize / 1024 / 1024, 2) }} MB</p>
+                @if ($bits_per_sample)
+                    <p class="text-gray-500 text-xs">Profundidad de bits: {{ $bits_per_sample }} bits</p>
                 @endif
             </div>
         @else

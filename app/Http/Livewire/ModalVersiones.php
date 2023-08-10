@@ -13,6 +13,7 @@ class ModalVersiones extends Component
     public $archivoId;
     public $versiones;
     public $archivo;
+    public $ultimaVersion; // Agregamos esta propiedad para almacenar la última versión
 
     public function mount($archivoId)
     {
@@ -33,26 +34,21 @@ class ModalVersiones extends Component
         // Crear una nueva instancia de getID3
         $getID3 = new GlobalGetID3;
 
-        // Convertir la colección de versiones a un array
         $versiones = $versiones->map(function ($version) use ($getID3) {
-            // Obtener la ruta del archivo de la versión
             $filePathVersion = Storage::path($version->ruta);
-
-            // Analizar el archivo de la versión
             $fileInfoVersion = $getID3->analyze($filePathVersion);
-
-            // Extraer la información deseada del archivo
             $bitrate = $fileInfoVersion['audio']['bitrate'] ?? null;
             $sample_rate = $fileInfoVersion['audio']['sample_rate'] ?? null;
-            // etc...
+            $duration = $fileInfoVersion['playtime_seconds'] ?? null; // Obtener la duración
+            $filesize = $fileInfoVersion['filesize'] ?? null; // Obtener el tamaño del archivo
 
             return [
-                'id' => $version->id, // Aquí está el ID de la versión
+                'id' => $version->id,
                 'archivo' => [
                     'nombre' => $version->archivo->nombre,
                     'id' => $version->archivo->id,
-                    'bloqueado' => $version->archivo->bloqueado, // Añadir la información de bloqueo del archivo
-                    'bloqueadoPor' => $version->archivo->bloqueadoPor, // Añadir la información de quién bloqueó el archivo
+                    'bloqueado' => $version->archivo->bloqueado,
+                    'bloqueadoPor' => $version->archivo->bloqueadoPor,
                 ],
                 'version' => $version->version,
                 'usuario' => $version->usuario,
@@ -60,12 +56,17 @@ class ModalVersiones extends Component
                 'archivo_id' => $version->archivo_id,
                 'bitrate' => $bitrate,
                 'sample_rate' => $sample_rate,
-                // etc...
+                'duration' => $duration, // Agregar la duración
+                'filesize' => $filesize, // Agregar el tamaño del archivo
             ];
         })->toArray();
 
+        // Obtenemos la última versión del archivo
+        $this->ultimaVersion = $this->archivo->ultimaVersion;
+
         $this->versiones = $versiones;
     }
+
 
 public function eliminarArchivo($versionId)
 {

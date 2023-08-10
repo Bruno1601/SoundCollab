@@ -5,6 +5,7 @@ namespace App\Http\Livewire;
 use App\Models\Archivo;
 use Livewire\Component;
 use Illuminate\Support\Facades\Storage;
+use getID3 as GlobalGetID3;
 
 class ArchivoItem extends Component
 {
@@ -46,8 +47,31 @@ class ArchivoItem extends Component
 
     public function render()
     {
-        return view('livewire.archivo-item');
+        // ...
 
+        $getID3 = new GlobalGetID3;
+
+        $archivo = $this->archivo; // Supongo que obtienes el archivo de alguna manera
+
+        // Obtener la última versión del archivo o el archivo original si no hay versiones
+        $ultimaVersion = $archivo->ultimaVersion ?? $archivo;
+
+        // Analizar la última versión del archivo
+        $filePath = Storage::path($ultimaVersion->ruta);
+        $fileInfo = $getID3->analyze($filePath);
+
+        // Agregar la información a la vista
+        return view('livewire.archivo-item', [
+            'archivo' => $archivo,
+            'ultimaVersion' => $ultimaVersion,
+            'bitrate' => $fileInfo['audio']['bitrate'] ?? null,
+            'sample_rate' => $fileInfo['audio']['sample_rate'] ?? null,
+            'lossless' => $fileInfo['audio']['lossless'] ?? null,
+            'codec_name' => $fileInfo['audio']['codec_name'] ?? null,
+            'duration' => $fileInfo['playtime_seconds'] ?? null,
+            'filesize' => $fileInfo['filesize'] ?? null,
+            'bits_per_sample' => $fileInfo['audio']['bits_per_sample'] ?? null,
+        ]);
     }
 
     public function eliminarArchivo($archivoId)

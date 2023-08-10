@@ -17,6 +17,8 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de subida</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bitrate</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sample Rate</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duración</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tamaño del archivo</th>
                                 <!-- Agregar más th aquí para cada pieza de información que quieras mostrar -->
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                             </tr>
@@ -33,6 +35,8 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $version['bitrate'] ?? 'N/A' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $version['sample_rate'] ?? 'N/A' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ gmdate("i:s", $version['duration']) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ round($version['filesize'] / 1024 / 1024, 2) }} MB</td>
                                         <!-- Agregar más td aquí para cada pieza de información que quieras mostrar -->
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <a href="{{ route('versiones.descargar', ['versionId' => $version['id']]) }}" class="text-blue-500 hover:underline">Descargar</a>

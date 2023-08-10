@@ -27,7 +27,7 @@ class ArchivoController extends Controller
 
             foreach ($archivos as $archivo) {
                 $nombreArchivoOriginal = $archivo->getClientOriginalName();
-                $nombreArchivo = preg_replace('/[^A-Za-z0-9-_.]/', '', $nombreArchivoOriginal);
+                $nombreArchivo = preg_replace('/[^A-Za-z0-9\-_.\s]/', '', $nombreArchivoOriginal);
                 $extension = $archivo->getClientOriginalExtension();
 
                 $formatoEncontrado = $this->validarFormatoArchivo($extension);
@@ -45,6 +45,13 @@ class ArchivoController extends Controller
                 $archivoExistente = Archivo::where('nombre', $nombreArchivo)
                     ->where('proyecto_id', $proyectoId)
                     ->first();
+
+                // Verifica si el archivo está bloqueado
+                if ($archivoExistente && $archivoExistente->bloqueado && $archivoExistente->bloqueado_por != auth()->id()) {
+                    $errores[] = 'El archivo está bloqueado y no se puede subir: ' . $nombreArchivo;
+                    continue;
+                }
+
 
                 if ($archivoExistente) {
                     $ultimaVersion = Version::where('archivo_id', $archivoExistente->id)
@@ -180,30 +187,23 @@ class ArchivoController extends Controller
     {
         $proyecto = Proyecto::findOrFail($proyectoId);
 
-        // Obtener la ruta de almacenamiento de los archivos del proyecto
-        $carpetaProyecto = storage_path('app/public/proyectos/' . $proyecto->id);
-
-        // Verificar si la carpeta del proyecto existe y contiene archivos
-        if (!is_dir($carpetaProyecto) || !$this->carpetaContieneArchivos($carpetaProyecto)) {
-            return redirect()->back()->withErrors(['El proyecto no tiene archivos para descargar']);
-        }
-
         // Crear un archivo ZIP temporal
         $archivoZip = storage_path('app/public/proyectos/' . $proyecto->id . '.zip');
         $zip = new ZipArchive();
 
         if ($zip->open($archivoZip, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
-            // Agregar cada archivo de la carpeta al archivo ZIP
-            $archivosCarpeta = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($carpetaProyecto));
-            foreach ($archivosCarpeta as $archivo) {
-                if (!$archivo->isDir()) {
-                    $rutaArchivo = $archivo->getPathname(); // Obtener la ruta completa del archivo
-                    $nombreArchivo = $archivo->getFilename(); // Obtener el nombre original del archivo
+            $archivos = $proyecto->archivos()->get();
+
+            foreach ($archivos as $archivo) {
+                $ultimaVersion = $archivo->ultimaVersion;
+                if ($ultimaVersion) {
+                    // Usar la ruta de almacenamiento en lugar de la ruta física
+                    $rutaArchivo = Storage::path($ultimaVersion->ruta);
+                    $nombreArchivo = pathinfo($rutaArchivo, PATHINFO_BASENAME);
                     $zip->addFile($rutaArchivo, $nombreArchivo);
                 }
             }
 
-            // Cerrar el archivo ZIP
             $zip->close();
 
             // Descargar el archivo ZIP con el nombre del proyecto
@@ -214,6 +214,7 @@ class ArchivoController extends Controller
         // Si ocurre un error al crear el archivo ZIP, redirigir a la página anterior
         return redirect()->back()->withErrors(['No se pudo crear el archivo ZIP']);
     }
+
 
     private function limpiarNombreArchivo($nombreArchivo)
     {
